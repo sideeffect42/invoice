@@ -2,8 +2,8 @@
 %        Datei: invoice.sty
 %        Autor: Oliver Corff
 %      Contact: oliver.corff@email.de
-%        Datum: October 01, 2011
-%      Version: 0.9
+%        Datum: August 06, 2018
+%      Version: 0.91
 %    Copyright: Ulaanbaatar, Beijing, Berlin, Zagreb, Shenyang, Shanghai
 %  Description: This collection of macros provides
 %               tools for generating complex invoices
@@ -12,19 +12,31 @@
 %
 % Corrections, suggestions and contributions by:
 %%%%%%
-% 
+%
 % Some of the following contributions came years ago, others quite
 % recently:
+%
+% Czech: Svarny Petr <svarnypetr@gmail.com>
 %
 % Spanish: Juanjo <jj.hfmc@gmail.com> and Lee Rudolph <lrudolph@panix.com>
 %
 % Corrections of Italian orthography: Paolo Cusinu <paolo.cusinu@gmail.com>
-% 
+%
 % Estonian and a patch for using fp: Priit Laes <plaes@plaes.org>
 %
 % Another patch for fp: AFresh1, March 2011 % e-mail: andrew@afresh1.com
 %
 % One variant of Spanish: Matias Banchoff <matiasb@cespi.unlp.edu.ar>
+%
+%%%%%%
+% 2018-08-05
+% Katrin Michelbach, request for "," instead of "."
+% email: katrin.michelbach@googlemail.com
+%
+%%%%%%
+% 2018-08-05
+% Svarny Petr, Czech labels
+% email: <svarnypetr@gmail.com>
 %
 %%%%%%
 % Jacopo, May 2003
@@ -33,9 +45,9 @@
 %   Contributed labels in Italian.
 %
 %%%%%%
-% O. Corff, July 2003 
-% 
-%   fixed one nasty spacing bug, simplified internal table 
+% O. Corff, July 2003
+%
+%   fixed one nasty spacing bug, simplified internal table
 %   construction (table now has five instead of six columns,
 %   the second of which was never used).
 %
@@ -50,7 +62,7 @@
 %
 %%%%%%
 % Robin Fairbairns, December 6, 2001
-% 
+%
 %   Hinted that the dollar sign can also be printed by saying
 %   \string$.
 %
@@ -82,10 +94,10 @@
 %   some calculations failed with the \Fee{title}{rate}{amount}
 %   where \rate is not an integer
 %
-%   another fix is that in my opinion the VAT line should be 
+%   another fix is that in my opinion the VAT line should be
 %   printed also even though only one project is specified
 %
-%   third fix is that the subtotal-line should not be printed 
+%   third fix is that the subtotal-line should not be printed
 %   on a project with only one \Fee line
 %
 %%%%%%
@@ -104,7 +116,7 @@
 % -------------------     identification     -------------------
 %
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{invoice}[2011/10/01]
+\ProvidesPackage{invoice}[2018/08/06]
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % -------------------    language options    -------------------
@@ -120,12 +132,14 @@
 \ifx\l@finnish\undefined	\newlanguage\l@finnish \fi
 \ifx\l@french\undefined		\newlanguage\l@french \fi
 \ifx\l@german\undefined		\newlanguage\l@german \fi
+\ifx\l@ngerman\undefined		\newlanguage\l@ngerman \fi
 \ifx\l@italian\undefined	\newlanguage\l@italian \fi
 \ifx\l@spanish\undefined	\newlanguage\l@spanish \fi
 \ifx\l@swedish\undefined	\newlanguage\l@swedish \fi
 \ifx\l@spanish\undefined	\newlanguage\l@spanish \fi
 \ifx\l@spanishe\undefined	\newlanguage\l@spanishe \fi
 \ifx\l@spanishv\undefined	\newlanguage\l@spanishv \fi
+\ifx\l@swissgerman\undefined		\newlanguage\l@swissgerman \fi
 %
 \DeclareOption{afrikaans}{\invoice@language=\number\l@afrikaans}
 \DeclareOption{dutch}{\invoice@language=\number\l@dutch}
@@ -134,12 +148,16 @@
 \DeclareOption{finnish}{\invoice@language=\number\l@finnish}
 \DeclareOption{french}{\invoice@language=\number\l@french}
 \DeclareOption{german}{\invoice@language=\number\l@german}
+\DeclareOption{ngerman}{\invoice@language=\number\l@ngerman}
 \DeclareOption{italian}{\invoice@language=\number\l@italian}
 \DeclareOption{spanish}{\invoice@language=\number\l@spanish}
 \DeclareOption{spanishe}{\invoice@language=\number\l@spanishe}
 \DeclareOption{spanishv}{\invoice@language=\number\l@spanishv}
 \DeclareOption{swedish}{\invoice@language=\number\l@swedish}
+\DeclareOption{swissgerman}{\invoice@language=\number\l@swissgerman}
 \DeclareOption{position}{}
+\newif\ifcomma
+\DeclareOption{comma}{\commatrue}
 %
 \ProcessOptions
 %
@@ -149,10 +167,15 @@
 \RequirePackage{ifthen}
 \RequirePackage{longtable}
 \RequirePackage{calc}
-\usepackage{fp}
-\input{invoice.def}
+\ifcomma
+	\RequirePackage[output-decimal-marker={,}]{siunitx}
+\else
+	\RequirePackage{siunitx}
+\fi
+\RequirePackage{fp}
+\input{invoicelabels.sty}
 %
-\newcommand{\InvoiceVersion}{0.9}%
+\newcommand{\InvoiceVersion}{0.91}%
 \newcounter{Fee}		%
 \newcounter{VAT}		%
 %\newcounter{VAT@rate}		%
@@ -226,13 +249,13 @@
 		%
 		\gdef\Flag{1}%
 		%\begin{center}% Removed 20050621 by suggestion from ...
-		\begin{longtable}{p{9cm}lrrr}%
+		\begin{longtable}{p{2cm}p{6cm}lrrr}%
 		%
 	\else \error@message{\NoInvoiceNesting}%
 	\fi}%
-% At the end of environment: 
+% At the end of environment:
 % Yields state 8->0, Close and complete invoice, finish tables, etc.
-{% 
+{%
 	\ifcase\Flag % 0: Invoice not started yet
 		%
 		\error@message{\MissingOpening}%
@@ -343,11 +366,12 @@
 	\setcounter{Expense@ctr}{0}%		% reset counter
 }
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\newcommand{\Fee}[3]{% Yields state 3, Print Fee Item
+\newcommand{\Fee}[4][]{% Yields state 3, Print Fee Item
 	%
-	% #1 Contents
-	% #2 Fee per Unit
-	% #3 Unit Count
+	% #1 Date
+	% #2 Contents
+	% #3 Fee per Unit
+	% #4 Unit Count
 	%
 	\ifcase\Flag % 0: Invoice not started yet
 		\error@message{\MissingOpening}%
@@ -361,12 +385,12 @@
 	\or	% 2: Start project, print title
 		%
 		\Fee@Title%
-		\Fee@Line{#1}{#2}{#3}%
+		\Fee@Line[#1]{#2}{#3}{#4}%
 		%
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	\or	% 3: Print remuneration item
 		%
-		\Fee@Line{#1}{#2}{#3}%
+		\Fee@Line[#1]{#2}{#3}{#4}%
 		%
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	\or	% 4: Print subtotal remuneration
@@ -448,7 +472,7 @@
 	\fi%
 }%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\newcommand{\EBC}[2]{% Yields state 5: Expenses in BaseCurrency 
+\newcommand{\EBC}[2]{% Yields state 5: Expenses in BaseCurrency
 	%
 	% #1 Contents und Datum
 	% #2 Amount in BaseCurrency
@@ -483,7 +507,7 @@
 		%
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	\or	% 5: Expense item
-		%   
+		%
 		\Expense@BaseCurrency{#1}{#2}%
 		%
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -501,11 +525,11 @@
 	\fi%
 }%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\newcommand{\EBCi}[2]{% Yields state 5: Expenses in BaseCurrency 
+\newcommand{\EBCi}[2]{% Yields state 5: Expenses in BaseCurrency
 	%				But, unlike base form (no
 	%				'invisible') this version does
 	%				not state the item, it only
-	%				the total amount of expenses. 
+	%				the total amount of expenses.
 	%
 	% #1 Contents und Datum
 	% #2 Amount in BaseCurrency
@@ -540,7 +564,7 @@
 		%
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	\or	% 5: Expense item
-		%   
+		%
 		\Expense@Base@Currency{#1}{#2}%
 		%
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -627,7 +651,7 @@
 	%				But, unlike base form (no
 	%				'invisible') this version does
 	%				not state the item, it only
-	%				the total amount of expenses. 
+	%				the total amount of expenses.
 	%
 	% #1 Contents und Datum
 	% #2 Currency
@@ -815,6 +839,7 @@
 \newcommand{\Print@Value}[1]{%
 	\FPmul\r#1{0.01}%% <- Reduce to BaseCurrency
 	\FPtrunc\r\r{2}%% <- Truncate to two digits
+%	 \num{\r}%		% <- Output data!
 	\r%		% <- Output data!
 }%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -830,35 +855,36 @@
 	\gdef\Flag{2}%
 	\gdef\Project{#1}%
 	\ST@Reset\addtocounter{Project}{1}%
-	%\ifnum\theProject>1 \\\\\else\\\fi%
-	%\multicolumn{5}{c}{\textbf{\large#1}}\\%
+	\ifnum\theProject>1 \\\\\else\\\fi%
+	\multicolumn{6}{c}{\textbf{\large#1}}\\%
 }%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newcommand{\Fee@Title}{%
 	\\
-	\noindent\textbf{\Activity}&&\UnitRate&\Count&\Amount\ (\BC)\\
+	\Date&\noindent\Activity&&\UnitRate&\Count&\Amount\ (\BC)\\
 	\hline%
 }%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\newcommand{\Fee@Line}[3]{%
+\newcommand{\Fee@Line}[4][]{%
 	%
-	% #1 Contents
-	% #2 Charged Fee per Unit
-	% #3 Count
+	% #1 Date
+	% #2 Contents
+	% #3 Charged Fee per Unit
+	% #4 Count
 	%
 	% Internal command, called by \Fee.
 	%
 	\gdef\Flag{3}%
 	%
-	#1			&	&#2	&#3 &
+	#1	&#2			&	&#3	&#4 &
 %
 %   next is reversed to allow real arithmetic.
 %   intermediate results are stored in integer format,
 %   so calculations are incorrect in case #2 is a real.
 %   fixed by exchanging the 1 and the 100
 %
-		\FPmul\r{100}{#2}% added 2006-01-04
-		\setcounter{One@Fee}{1 *\real{\r} * \real{#3} }%
+		\FPmul\r{100}{#3}% added 2006-01-04
+		\setcounter{One@Fee}{1 *\real{\r} * \real{#4} }%
 %
 		\addtocounter{ST@Fee}{\theOne@Fee}%
 		\addtocounter{Fee}{\theOne@Fee}%
@@ -878,19 +904,19 @@
 }%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newcommand{\Print@ST@Fees}{%
-	%\gdef\Flag{4}%
-	%\SubtotalFee &	&	&	&%	print the subtotal of fees
-	%	\Print@Value{\theST@Fee}\\%
+	\gdef\Flag{4}%
+	\\\multicolumn{5}{l}{\SubtotalFee} &%	print the subtotal of fees
+		\Print@Value{\theST@Fee}\\%
 }%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newcommand{\ST@VAT@Printout}{%
-		\VAT\ (\VAT@rate\%)	 &	&	&	&%
+		\multicolumn{5}{l}{\VAT\ (\VAT@rate\%)} &%
 			\setcounter{ST@VAT}{\theST@Fee * \real{\VAT@rate} / 100}%
 				\Print@Value{\theST@VAT}\\%
 }%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newcommand{\Expense@BaseCurrency}[2]{%
-	#1			& \BC		&	&	&%
+	& #1			& \BC		&	&	&%
 	\gdef\Flag{5}%
 	\FPmul\r{100}{#2}%
 	\setcounter{One@Expense}{1*\real{\r}}%
@@ -907,7 +933,7 @@
 	\addtocounter{ST@Expenses}{\theOne@Expense}%
 	\addtocounter{Expenses}{\theOne@Expense}%
 	\addtocounter{Expense@ctr}{1}%advance counter
-		&	&	&	&	\\[-1.2em]% This is an ugly kludge:
+		&	&	&	&	&	\\[-1.2em]% This is an ugly kludge:
 								  %	Inserting an empty line
 								  % which rolls backwards
 								  % makes disappear the spurious
@@ -980,45 +1006,45 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newcommand{\Print@ST@Expenses}{%
 	\gdef\Flag{6}%
-		&	&	&	&	\\[-1.2em]% ugly kludge as above
-	\SubtotalExpenses &	&	&	&%	print the subtotal of expenses
+		&	&	&	&	&	\\[-1.2em]% ugly kludge as above
+	\multicolumn{5}{l}{\SubtotalExpenses} &%	print the subtotal of expenses
 		\Print@Value{\theST@Expenses}\\%
 }%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newcommand{\ST@Project}{%
-	%\gdef\Flag{7}%
-	%\\
+	\gdef\Flag{7}%
+	\\
 	%\multicolumn{4}{l}{\SubtotalProject}%
 	%\let\Project\NewProject%
 	%&
-	%\SubtotalProject &	&	&	& 
+	\multicolumn{5}{l}{\SubtotalProject} &
 			\addtocounter{ST@Project}{\theST@Fee}%
 			\addtocounter{ST@Project}{\theST@VAT}%
 			\addtocounter{ST@Project}{\theST@Expenses}%
-	%		\Print@Value{\theST@Project}\\
+			\Print@Value{\theST@Project}\\
 }
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newcommand{\Total@VAT@Printout}{%
 		\setcounter{VAT}{\theFee*\real{\VAT@rate}/100}%
-			\SumVAT	&	&	&	&\Print@Value{\theVAT}\\%
+			\multicolumn{5}{l}{\SumVAT}	&\Print@Value{\theVAT}\\%
 }%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newcommand{\Tot@l}{%
 	\\\hline
-	\ifnum\theFee>0 \SumFees&	&	&	&%
-				\Print@Value{\theFee}\\ 
+	\ifnum\theFee>0 \multicolumn{5}{l}{\SumFees} &%
+				\Print@Value{\theFee}\\
 		\ifVATnonzero%
 			\Total@VAT@Printout%
 		\fi%
 	\fi%
-	\ifnum\theExpenses>0 \SumExpenses&	&	&	&%
-				\Print@Value{\theExpenses}\\ 
+	\ifnum\theExpenses>0 \multicolumn{5}{l}{\SumExpenses} &%
+				\Print@Value{\theExpenses}\\
 	\fi%
-	\ifnum\theDiscount<0 \Discount@Contents&	&	&	&%
-				\Print@Value{\theDiscount}\\ 
+	\ifnum\theDiscount<0 \multicolumn{5}{l}{\Discount@Contents} &%
+				\Print@Value{\theDiscount}\\
 	\fi%
 	\hline\hline
-	\textbf{\Total} &	&	&	&%
+	\multicolumn{5}{l}{\textbf{\Total}} &%
 		\message{^^J\Currency: \BC}%
 		\message{^^J\VAT: \VAT@rate}%
 		\addtocounter{Total}{\theFee}%
@@ -1031,7 +1057,7 @@
 		\addtocounter{Total}{\theDiscount}%
 		\message{^^J\Discount@Contents: }\Message@Value{\theDiscount}%
 		\fi %
-		\textbf{\Print@Value{\theTotal}}%
+		\textbf{\Print@Value{\theTotal}}% 		FIXME: Not bold
 		\message{^^J\Total: }%
 			\Message@Value{\theTotal}\message{^^J^^J}\\%
 	\end{longtable}
