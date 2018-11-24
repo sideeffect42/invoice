@@ -1,0 +1,34 @@
+% -*- mode: latex -*-
+\ProvidesFile{_rechnung.lco}[2018-11-20 Rechnung]
+
+\KOMAoptions{
+  paper=a4,
+  pagenumber=botright,
+  foldmarks=true,
+  parskip=full,
+  subject=titled,
+  %
+  % Kopfzeile
+  firsthead=true,
+  fromlogo=true,
+  fromalign=locationleft,
+  fromemail=true,
+  fromphone=false,
+  fromurl=false,
+  %
+  % Empfängeradresse
+  addrfield=true,
+  backaddress=true,
+  %
+  % Refline
+  refline=narrow,
+  %
+  % Fusszeile
+  firsthead=true,
+  firstfoot=true,
+  %
+  headsepline=false,
+  footsepline=false
+}
+
+\@setplength{firstheadvpos}{20mm}

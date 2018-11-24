@@ -1,15 +1,17 @@
-% koma_env.tex
-\documentclass[a4paper]{scrlttr2}
-\usepackage[top=2cm, bottom=1cm, left=2cm, right=2cm]{geometry}
-\usepackage{graphicx}
-\usepackage{lmodern}
+\documentclass[DIN,SN,11pt,DIV=16,_rechnung]{scrlttr2}
+%\usepackage[top=2cm,bottom=1cm,left=2cm,right=2cm]{geometry}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage[ngerman]{babel}
+\usepackage{bera}
+
+\usepackage{microtype}
+\usepackage{graphicx}
 \usepackage{color}
 \usepackage[hidelinks]{hyperref}
 
 \usepackage[swissgerman]{invoice}
+\def\Activity{Bezeichnung}
 
 % Dates
 \usepackage{texdate}
@@ -19,22 +21,13 @@
 
 \renewcommand{\familydefault}{\sfdefault}
 
-% include meta data
+% Include meta data
 \include{_data}
 
-\setkomavar{fromname}{\senderName}
-\setkomavar{fromaddress}{\senderStreet \\ \senderZIP \ \senderCity}
-\setkomavar{place}{\senderCity}
 \setkomavar{date}{\invoiceDate}
-\setkomavar{fromphone}{\senderTelephone}
-\setkomavar{frommobilephone}{\senderMobilephone}
-\setkomavar{fromemail}{\href{mailto:\senderEmail}{\nolinkurl{\senderEmail}}}
-\setkomavar{subject}{Rechnung}
-\setkomavar{location}{
-  \\[\baselineskip] \\[\baselineskip]
-  \flushright \small {\vspace{1cm}Rechnungsnummer: 
-  \invoiceReference}
-}
+\setkomavar{invoice}{\invoiceReference}
+
+\setkomavar{title}{\raggedright Rechnung}
 
 \setkomavar{firsthead}{\hfill
    \parbox[t][\headheight][t]{6cm}{%
@@ -63,23 +56,31 @@
 
 
 \begin{document}
-	\begin{letter}{\customerCompany \\ \customerName \\ 
-	\customerStreet \\ \customerZIP \ \customerCity}
-	
-			\includegraphics[width=0.15\textwidth]{logo.png}			
-			\opening{\invoiceSalutation}
-			\invoiceText
-		    \begin{invoice}{Euro}{0}
-			    \input{_invoice}
-		    \end{invoice}
-		\ps Im ausgewiesenen Betrag ist gemäß § 19 UStG keine Umsatzsteuer 
-		enthalten.
+  \begin{letter}{
+      Some Corp \\
+      Hans Müller \\
+      Bahnhofstrasse 42 \\
+      1337 \ Vallorbe
+    }
 
-		\closing{\invoiceClosing}
-		\invoiceEnclosures
+    \opening{Sehr geehrte Damen und Herren}
 
+    Ich bedanke mich recht herzlich für Ihren Auftrag und erlaube mir, für die
+    von mir erbrachten Leistungen folgende Rechnung zu stellen:
 
+    \begin{invoice}{CHF}{0}
+      \input{_invoice}
+    \end{invoice}
 
-	\end{letter}
+    \begin{samepage}
+      Bitte zahlen Sie den unten aufgeführten Gesamtbetrag unter Angabe
+      der Rechnungsnummer (\invoiceReference) bis zum \payDate \ auf das
+      im Briefkopf angegebene Konto ein.\\
+      Besten Dank dafür.
+
+      \closing{Mit freundlichen Grüssen}
+
+      \invoiceEnclosures
+    \end{samepage}
+ \end{letter}
 \end{document}
-
