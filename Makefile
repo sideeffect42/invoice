@@ -20,7 +20,7 @@ rechnung.pdf: _main.pdf
 
 .PHONY: clean
 clean:
-	$(RM) _data.aux _data.log _main.aux _main.log _main.out
+	$(RM) _main.aux _main.log _main.out
 
 rechnung-signed.pdf: rechnung.pdf
 ifeq (,$(GPG))

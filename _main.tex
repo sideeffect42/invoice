@@ -1,5 +1,4 @@
-\documentclass[DIN,SN,11pt,DIV=16,_rechnung]{scrlttr2}
-%\usepackage[top=2cm,bottom=1cm,left=2cm,right=2cm]{geometry}
+\documentclass[DIN,SN,10pt,DIV=18,_rechnung]{scrlttr2}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage[ngerman]{babel}
@@ -16,54 +15,36 @@
 \def\SumFees{Total}
 \def\SumExpenses{\Expenses}
 
-% Dates
 \usepackage{texdate}
-\nameddateformat{normal}{d.m.Y}
-\nameddateformat{invoiceno}{ymd}
-
 
 \renewcommand{\familydefault}{\sfdefault}
 
-% Include meta data
-\include{_data}
-
-\setkomavar{date}{\invoiceDate}
-\setkomavar{invoice}{\invoiceReference}
-
 \setkomavar{title}{\raggedright Rechnung}
 
-\setkomavar{firsthead}{\hfill
-   \parbox[t][\headheight][t]{6cm}{%
-   \footnotesize
-   \raggedright
-   \flushright
-   \color[gray]{.3}%
-	\begin{tabular}{rl}
-		 Anschrift & \usekomavar{fromname}\\
-		 & \senderStreet\\
-		 & \senderZIP  \ \senderCity \\
-		 \\
-		 %\Telefon \ Telefon:  \` \senderTelephone \\
-		 Mobil  & \usekomavar{frommobilephone} \\
-		 E-Mail  & \usekomavar{fromemail} \\
-		 Webseite & {\normalfont\ttfamily  \senderWeb } \\
-		 \\
-		 Steuernummer & \taxID \\
-		 \\
-		 Institut & \accountBankName \\
-		 IBAN & \accountIBAN \\
-		 BIC & \accountBIC
-	\end{tabular}	 			    
-   }%
-}
+% \setkomavar{fromlogo}{\includegraphics[width=8cm]{logo.pdf}}
+\setkomavar{fromname}{\LaTeX\ User}
+\setkomavar{fromaddress}{Bahnhofstrasse 1\\1234 Musterhausen}
+\setkomavar{place}{Musterhausen}
+\setkomavar{fromphone}{+41\,(0)\,32\,123\,45\,47}
+\setkomavar*{emailseparator}{mailto}
+\setkomavar{emailseparator}{:}
+\setkomavar{fromemail}{\href{mailto:mail@example.com}{mail@example.com}}
+\setkomavar*{urlseparator}{http}
+\setkomavar{urlseparator}{:}
+\setkomavar{fromurl}{\href{http://www.example.com}{www.example.com}}
 
+\setkomavar{vatid}{123/456/78901}
+\setkomavar{frombankbcno}{30060088}
+\setkomavar{frombankname}{DAB-Bank, 0000 Foohausen}
+\setkomavar{frombankiban}{DE00 3006 0088 1234 5678 90}
+\setkomavar{frombankbic}{DRTTZZUUXXX}
 
 \begin{document}
   \begin{letter}{
       Some Corp \\
       Hans Müller \\
       Bahnhofstrasse 42 \\
-      1337 \ Vallorbe
+      1337 Vallorbe
     }
 
     \opening{Sehr geehrte Damen und Herren}
@@ -76,14 +57,14 @@
     \end{invoice}
 
     \begin{samepage}
-      Bitte zahlen Sie den unten aufgeführten Gesamtbetrag unter Angabe
-      der Rechnungsnummer (\invoiceReference) bis zum \payDate \ auf das
-      im Briefkopf angegebene Konto ein.\\
+      Bitte zahlen Sie den unten aufgeführten Gesamtbetrag unter Angabe der
+      Rechnungsnummer (\usekomavar{invoice}) bis zum \usekomavar{paydate} auf
+      das im Briefkopf angegebene Konto ein.\\
       Besten Dank dafür.
 
       \closing{Mit freundlichen Grüssen}
 
-      \invoiceEnclosures
+      % \encl{}
     \end{samepage}
  \end{letter}
 \end{document}

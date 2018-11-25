@@ -14,6 +14,7 @@
 }
 
 \RequirePackage{graphicx}
+\RequirePackage{texdate}
 
 \KOMAoptions{
   paper=a4,
@@ -24,8 +25,8 @@
   %
   % Kopfzeile
   firsthead=true,
+  fromalign=left,
   fromlogo=true,
-  fromalign=locationleft,
   fromemail=true,
   fromphone=false,
   fromurl=false,
@@ -38,11 +39,62 @@
   refline=narrow,
   %
   % Fusszeile
-  firsthead=true,
-  firstfoot=true,
+  firstfoot=false,
+  footinclude=true,
   %
   headsepline=false,
   footsepline=false
 }
 
-\@setplength{firstheadvpos}{20mm}
+\makeatletter
+\@setplength{firstheadvpos}{18mm}
+\@setplength{firstheadhpos}{18mm}
+\makeatother
+
+\setkomavar{firsthead}{%\hfill
+  \parbox[t][\headheight][t]{8cm}{%
+    \usekomavar{fromlogo}
+
+    \footnotesize\flushleft\color[gray]{.3}%
+    \begin{tabular}{r l}
+      Adresse   & \parbox[t]{\columnwidth}{
+                    \usekomavar{fromname}   \\
+                    \usekomavar{fromaddress}
+                  }~                        \\
+                                            \\
+      \usekomavar*{emailseparator}\usekomavar{emailseparator}%
+                & \usekomavar{fromemail}    \\
+      \usekomavar*{urlseparator}\usekomavar{urlseparator}%
+                & \usekomavar{fromurl}      \\
+                                            \\
+      \ifkomavarempty{vatid}{}{%
+      MWST-Nr.  & \usekomavar{vatid}        \\
+                                            \\
+      }
+      Bank      & \usekomavar{frombankname} \\
+      IBAN      & \usekomavar{frombankiban} \\
+      SWIFT/BIC & \usekomavar{frombankbic}  \\
+      BC-Nr.    & \usekomavar{frombankbcno}
+   \end{tabular}
+ }%
+}
+
+% ################## Variablen ##################
+
+\newkomavar{paydate}
+\newkomavar[MWSt-Nummer]{vatid}
+
+\newkomavar[Bank-Clearing Nummer]{frombankbcno}
+\newkomavar[Name der Bank]{frombankname}
+\newkomavar[IBAN]{frombankiban}
+\newkomavar[SWIFT/BIC Code]{frombankbic}
+
+% Daten
+\nameddateformat{normal}{d.m.Y}
+\nameddateformat{invoiceno}{ymd}
+\initcurrdate\savedate{invoicedate}
+
+\newcommand{\payperiod}{30}
+\setkomavar{date}{\restoredate{invoicedate}\printfdate{normal}}
+\setkomavar{invoice}{\restoredate{invoicedate}\printfdate{invoiceno}-1}
+\setkomavar{paydate}{\restoredate{invoicedate}\advancebydays{\payperiod}\printfdate{normal}}
