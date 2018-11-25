@@ -1,4 +1,5 @@
 \documentclass[DIN,SN,10pt,DIV=18,_rechnung]{scrlttr2}
+\usepackage{scrlayer-scrpage}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage[ngerman]{babel}
@@ -12,8 +13,9 @@
 \usepackage[swissgerman]{invoice}
 \def\Activity{Bezeichnung}
 \def\SubtotalFee{Subtotal}
-\def\SumFees{Total}
+\def\SumFees{Zwischensumme}
 \def\SumExpenses{\Expenses}
+\def\Total{Rechnungsbetrag}
 
 \usepackage{texdate}
 
@@ -48,6 +50,7 @@
     }
 
     \opening{Sehr geehrte Damen und Herren}
+    \thispagestyle{plain}
 
     Ich bedanke mich recht herzlich für Ihren Auftrag und erlaube mir, für die
     von mir erbrachten Leistungen folgende Rechnung zu stellen:
@@ -68,7 +71,7 @@
     \begin{samepage}
       Bitte zahlen Sie den unten aufgeführten Gesamtbetrag unter Angabe der
       Rechnungsnummer (\usekomavar{invoice}) bis zum \usekomavar{paydate} auf
-      das im Briefkopf angegebene Konto ein.\\
+      das in der Fusszeile angegebene Konto ein.\\
       Besten Dank dafür.
 
       \closing{Mit freundlichen Grüssen}

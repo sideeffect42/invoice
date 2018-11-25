@@ -19,6 +19,8 @@ pdf: rechnung.pdf
 clean:
 	$(RM) rechnung.aux rechnung.log rechnung.out
 
+rechnung.pdf: _rechnung.lco
+
 rechnung-signed.pdf: rechnung.pdf
 ifeq (,$(GPG))
 $(error GnuPG could not be found)
