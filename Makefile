@@ -12,15 +12,12 @@ default: pdf
 signed: rechnung-signed.pdf
 pdf: rechnung.pdf
 
-_main.pdf: _main.tex
-	TEXINPUTS=".$(shell find ./packages -maxdepth 1 -type d -printf ':%p'):" $(PDFLATEX) _main.tex
-
-rechnung.pdf: _main.pdf
-	mv '$<' '$@'
+%.pdf: %.tex
+	TEXINPUTS=".$(shell find ./packages -maxdepth 1 -type d -printf ':%p'):" $(PDFLATEX) '$<'
 
 .PHONY: clean
 clean:
-	$(RM) _main.aux _main.log _main.out
+	$(RM) rechnung.aux rechnung.log rechnung.out
 
 rechnung-signed.pdf: rechnung.pdf
 ifeq (,$(GPG))
