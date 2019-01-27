@@ -46,6 +46,8 @@
   footsepline=false
 }
 
+\newcounter{reminder}
+
 % Lengths
 \makeatletter
 \@setplength{firstheadvpos}{18mm}

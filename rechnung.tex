@@ -21,8 +21,6 @@
 
 \renewcommand{\familydefault}{\sfdefault}
 
-\setkomavar{title}{\raggedright Rechnung}
-
 \setkomavar{fromlogo}{\includegraphics[width=8cm,height=2cm,keepaspectratio]{logo}}
 \setkomavar{fromname}{\LaTeX\ User}
 \setkomavar{fromaddress}{Bahnhofstrasse 1\\1234 Musterhausen}
@@ -41,6 +39,25 @@
 \setkomavar{frombankiban}{DE00 3006 0088 1234 5678 90}
 \setkomavar{frombankbic}{DRTTZZUUXXX}
 
+% Set the number of this reminder (0 = invoice, no reminder)
+\setcounter{reminder}{0}
+% Set to original invoice no. if reminder:
+% \setkomavar{invoice}{...}
+
+% Set pay periods and title
+\ifnum\thereminder=0
+\setkomavar{title}{\raggedright Rechnung}
+\renewcommand{\payperiod}{30}
+\else
+\ifnum\thereminder=1
+\setkomavar{title}{\raggedright Zahlungserinnerung}
+\renewcommand{\payperiod}{14}
+\else
+\setkomavar{title}{\raggedright Letzte Mahnung}
+\renewcommand{\payperiod}{10}
+\fi
+\fi
+
 \begin{document}
   \begin{letter}{
       Some Corp \\
@@ -52,27 +69,58 @@
     \opening{Sehr geehrte Damen und Herren}
     \thispagestyle{plain}
 
-    Ich bedanke mich recht herzlich für Ihren Auftrag und erlaube mir, für die
-    von mir erbrachten Leistungen folgende Rechnung zu stellen:
+    \ifnum\thereminder=0
+      Ich bedanke mich recht herzlich für Ihren Auftrag und erlaube mir, für die
+      von mir erbrachten Leistungen folgende Rechnung zu stellen:
+    \else
+      % This is a reminder...
+      \ifnum\thereminder=1
+        % 1st reminder
+        Im hektischen Alltag geht schnell einmal etwas übersehen.
+        Sicherlich ist es Ihrer Aufmerksamkeit entgangen, die folgene Rechnung zu begleichen:
+      \else
+        % last reminder
+        % TODO
+        \dots
+      \fi
+    \fi
 
     \begin{invoice}{CHF}{0}
       \ProjectTitle{Projekttitel} %
       \Fee{Musterdienstleistung 1}{30.00}{4}
       \Fee{Musterdienstleistung 2}{36.00}{7}
 
-      % Auslagen
+      % Spesen
       \EBCi{Hotel, 12 Nächte} {2400.00}
       \STExpenses
 
+      \ProjectTitle{Projekt B}%
+      \Fee[01.03.--10.03.2018]{Logik}{80.00}{2}
+      \Fee[07.06.2018]{Design}{80.00}{2}
+
       % Rabatt
       \Discount{Rabatt} {20}
+
+      % if reminder:
+      % \Interest{Verzugszins (5\% p.a.)}{5}{14/360} % 5% p.a. for 14 days
     \end{invoice}
 
     \begin{samepage}
-      Bitte zahlen Sie den unten aufgeführten Gesamtbetrag unter Angabe der
-      Rechnungsnummer (\usekomavar{invoice}) bis zum \usekomavar{paydate} auf
-      das in der Fusszeile angegebene Konto ein.\\
-      Besten Dank dafür.
+      \ifnum\thereminder=0
+        % Invoice
+        Bitte zahlen Sie den oben aufgeführten {\Total} unter Angabe der
+        Rechnungsnummer (\usekomavar{invoice}) bis zum \usekomavar{paydate} auf
+        das in der Fusszeile angegebene Konto ein.\\
+        Besten Dank dafür.
+      \else
+        % Reminder
+        Ich bitte Sie deswegen freundlichst, die Bezahlung des oben aufgeführten
+        {\Total}s unter Angabe der Rechnungsnummer (\usekomavar{invoice}) spätestens
+        bis zum \usekomavar{paydate} nachzuholen.
+
+        Falls Sie die Frist nicht einhalten können, bitte ich Sie, mich zu
+        kontaktieren, damit wir eine Lösung finden können.
+      \fi
 
       \closing{Mit freundlichen Grüssen}
 
