@@ -137,7 +137,7 @@
 
 \RequirePackage{scrlayer-scrpage}
 \ForEachLayerOfPageStyle*{plain.scrheadings}{%
-  \ifstrstart{#1}{plain.scrheadings.foot}{%
+  \Ifstrstart{#1}{plain.scrheadings.foot}{%
     \ModifyLayer[
       addvoffset=-5mm
     ]{#1}
