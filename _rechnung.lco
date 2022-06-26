@@ -70,7 +70,7 @@
       \usekomavar*{urlseparator}\usekomavar{urlseparator}%
                 & \usekomavar{fromurl}      \\
                                             \\
-      \ifkomavarempty{vatid}{}{%
+      \Ifkomavarempty{vatid}{}{%
       MWST-Nr.  & \usekomavar{vatid}        \\
                                             \\
       }
