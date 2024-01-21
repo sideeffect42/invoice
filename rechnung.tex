@@ -10,12 +10,10 @@
 \usepackage{color}
 \usepackage[hidelinks]{hyperref}
 
-\usepackage[swissgerman]{invoice}
-\def\Activity{Bezeichnung}
+\usepackage[swissgerman,subtotals=ifmultiple,totals=detailed]{invoice}
 \def\SubtotalFee{Subtotal}
 \def\SumFees{Zwischensumme}
 \def\SumExpenses{\Expenses}
-\def\Total{Rechnungsbetrag}
 
 \usepackage{texdate}
 
@@ -95,8 +93,8 @@
       \STExpenses
 
       \ProjectTitle{Projekt B}%
-      \Fee[01.03.--10.03.2018]{Logik}{80.00}{2}
-      \Fee[07.06.2018]{Design}{80.00}{2}
+      \Fee{Logik}{80.00}{2}
+      \Fee{Design}{80.00}{2}
 
       % Rabatt
       \Discount{Rabatt} {20}

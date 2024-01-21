@@ -133,34 +133,77 @@
 \ifx\l@finnish\undefined	\newlanguage\l@finnish \fi
 \ifx\l@french\undefined		\newlanguage\l@french \fi
 \ifx\l@german\undefined		\newlanguage\l@german \fi
-\ifx\l@ngerman\undefined		\newlanguage\l@ngerman \fi
 \ifx\l@italian\undefined	\newlanguage\l@italian \fi
 \ifx\l@spanish\undefined	\newlanguage\l@spanish \fi
 \ifx\l@swedish\undefined	\newlanguage\l@swedish \fi
 \ifx\l@spanish\undefined	\newlanguage\l@spanish \fi
 \ifx\l@spanishe\undefined	\newlanguage\l@spanishe \fi
 \ifx\l@spanishv\undefined	\newlanguage\l@spanishv \fi
-\ifx\l@swissgerman\undefined		\newlanguage\l@swissgerman \fi
+\ifx\l@swissgerman\undefined	\newlanguage\l@swissgerman \fi
 %
-\DeclareOption{afrikaans}{\invoice@language=\number\l@afrikaans}
-\DeclareOption{dutch}{\invoice@language=\number\l@dutch}
-\DeclareOption{english}{\invoice@language=\number\l@english}
-\DeclareOption{estonian}{\invoice@language=\number\l@estonian}
-\DeclareOption{finnish}{\invoice@language=\number\l@finnish}
-\DeclareOption{french}{\invoice@language=\number\l@french}
-\DeclareOption{german}{\invoice@language=\number\l@german}
-\DeclareOption{ngerman}{\invoice@language=\number\l@ngerman}
-\DeclareOption{italian}{\invoice@language=\number\l@italian}
-\DeclareOption{spanish}{\invoice@language=\number\l@spanish}
-\DeclareOption{spanishe}{\invoice@language=\number\l@spanishe}
-\DeclareOption{spanishv}{\invoice@language=\number\l@spanishv}
-\DeclareOption{swedish}{\invoice@language=\number\l@swedish}
-\DeclareOption{swissgerman}{\invoice@language=\number\l@swissgerman}
-\DeclareOption{position}{}
+\usepackage{xkeyval}
+\DeclareOptionX{afrikaans}{\invoice@language=\number\l@afrikaans}
+\DeclareOptionX{dutch}{\invoice@language=\number\l@dutch}
+\DeclareOptionX{english}{\invoice@language=\number\l@english}
+\DeclareOptionX{estonian}{\invoice@language=\number\l@estonian}
+\DeclareOptionX{finnish}{\invoice@language=\number\l@finnish}
+\DeclareOptionX{french}{\invoice@language=\number\l@french}
+\DeclareOptionX{german}{\invoice@language=\number\l@german}
+\DeclareOptionX{italian}{\invoice@language=\number\l@italian}
+\DeclareOptionX{spanish}{\invoice@language=\number\l@spanish}
+\DeclareOptionX{spanishe}{\invoice@language=\number\l@spanishe}
+\DeclareOptionX{spanishv}{\invoice@language=\number\l@spanishv}
+\DeclareOptionX{swedish}{\invoice@language=\number\l@swedish}
+\DeclareOptionX{swissgerman}{\invoice@language=\number\l@swissgerman}
+\DeclareOptionX{position}{}
 \newif\ifcomma
-\DeclareOption{comma}{\commatrue}
+\DeclareOptionX{comma}{\commatrue}
 %
-\ProcessOptions
+\gdef\invoice@subtotalmode{always}%
+\gdef\invoice@totalmode{detailed}%
+\gdef\invoice@vatmode{separate}%
+\DeclareOptionX{subtotals}{\gdef\invoice@subtotalmode{#1}}
+\DeclareOptionX{totals}{\gdef\invoice@totalmode{#1}}
+\DeclareOptionX{vat}{\gdef\invoice@vatmode{#1}}
+%
+\ProcessOptionsX
+%
+\RequirePackage{ifthen}
+\ifthenelse{\equal{\invoice@subtotalmode}{none}}{%
+	\gdef\invoice@subtotalmode{0}%
+}{\ifthenelse{\equal{\invoice@subtotalmode}{always}}{%
+	\gdef\invoice@subtotalmode{1}%
+}{\ifthenelse{\equal{\invoice@subtotalmode}{ifmultiple}}{%
+	\gdef\invoice@subtotalmode{2}%
+}{\ifthenelse{\equal{\invoice@subtotalmode}{projectonly}}{%
+	\gdef\invoice@subtotalmode{3}%
+}{%
+	\errmessage{^^JError: unknown subtotals mode: \invoice@subtotalmode^^J^^J}
+	\gdef\invoice@subtotalmode{1}% fallback
+}}}}
+%
+\ifthenelse{\equal{\invoice@totalmode}{none}}{%
+	\gdef\invoice@totalmode{0}%
+}{\ifthenelse{\equal{\invoice@totalmode}{simple}}{%
+	\gdef\invoice@totalmode{1}%
+}{\ifthenelse{\equal{\invoice@totalmode}{detailed}}{%
+	\gdef\invoice@totalmode{2}%
+}{%
+	\errmessage{^^JError: unknown totals mode: \invoice@totalmode^^J^^J}
+	\gdef\invoice@totalmode{2}% fallback
+}}}
+%
+\ifthenelse{\equal{\invoice@vatmode}{none}}{%
+	\gdef\invoice@vatmode{0}%
+}{\ifthenelse{\equal{\invoice@vatmode}{total}}{%
+	\gdef\invoice@vatmode{1}%
+}{\ifthenelse{\equal{\invoice@vatmode}{separate}}{%
+	\gdef\invoice@vatmode{2}%
+}{
+	\errmessage{^^JError: unknown VAT mode: \invoice@vatmode^^J^^J}
+	\gdef\invoice@vatmode{2}% fallback
+}}}
+%
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % -------------------      initial code      -------------------
@@ -198,6 +241,7 @@
 \newcounter{One@VAT}		% Individual VAT
 \newcounter{One@Expense}	% Individual Expense
 %
+\newcounter{ST}			% Count number of subtotal lines
 \newcounter{ST@Fee}		% Subtotal Fee
 \newcounter{ST@VAT}		% Subtotal VAT
 \newcounter{ST@Expenses}	% Subtotal Expenses
@@ -240,9 +284,9 @@
 	\def\BC{#1}%
 	\def\VAT@rate{#2}%
 	\ifx\VAT@rate\Null\VATnonzerofalse\else\VATnonzerotrue\fi%
-	\ifVATnonzero
+	\ifVATnonzero%
 		\message{^^J^^JVAT is not zero!^^J^^J}%
-	\else
+	\else%
 		\message{^^J^^JVAT is zero!^^J^^J}%
 	\fi%
 	% The VAT is: \the\VAT@rate % Debugging Diagnostics only
@@ -250,8 +294,10 @@
 	\ifcase\Flag % 0: Invoice not started yet
 		%
 		\gdef\Flag{1}%
-		%\begin{center}% Removed 20050621 by suggestion from ...
-		\begin{longtable}{p{3cm}p{6cm}lrrr}%
+		% FIXME: set LTleft and LTright only for this table somehow.
+		\setlength{\LTleft}{0pt}%
+		\setlength{\LTright}{0pt}%
+		\begin{longtable}{@{\extracolsep{\fill}} b{100mm} l r r r @{\extracolsep{\fill}}}%
 		%
 	\else \error@message{\NoInvoiceNesting}%
 	\fi}%
@@ -314,6 +360,8 @@
 \newcommand{\ProjectTitle}[1]{% Yields state 2: Start Project
 	%\gdef\NewProject{#1}
 	%
+	\addtocounter{Project}{1}%
+	%
 	\ifcase\Flag% 0: Invoice not started yet
 	%
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -366,14 +414,18 @@
 	\fi%
 	\setcounter{Fee@ctr}{0}%		% reset counter
 	\setcounter{Expense@ctr}{0}%		% reset counter
-}
+}%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\newcommand{\Fee}[4][]{% Yields state 3, Print Fee Item
+\newcommand{\Fee}{\@ifstar\Fee@Star\Fee@NoStar}%
+\newcommand{\Fee@NoStar}[3]{\Fee@Impl{#1}{#2}{#3}{\Fee@Line}}%
+\newcommand{\Fee@Star}[3]{\Fee@Impl{#1}{#2}{#3}{\Fee@LineStar}}%
+%
+\newcommand{\Fee@Impl}[4]{% Yields state 3, Print Fee Item
 	%
-	% #1 Date
-	% #2 Contents
-	% #3 Fee per Unit
-	% #4 Unit Count
+	% #1 Contents
+	% #2 Fee per Unit
+	% #3 Unit Count
+	% #4 \Fee@Line implementation
 	%
 	\ifcase\Flag % 0: Invoice not started yet
 		\error@message{\MissingOpening}%
@@ -387,12 +439,12 @@
 	\or	% 2: Start project, print title
 		%
 		\Fee@Title%
-		\Fee@Line[#1]{#2}{#3}{#4}%
+		#4{#1}{#2}{#3}%
 		%
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	\or	% 3: Print remuneration item
 		%
-		\Fee@Line[#1]{#2}{#3}{#4}%
+		#4{#1}{#2}{#3}%
 		%
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	\or	% 4: Print subtotal remuneration
@@ -474,10 +526,16 @@
 	\fi%
 }%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\newcommand{\EBC}[2]{% Yields state 5: Expenses in BaseCurrency
+% regular expense
+\newcommand{\EBC}[2]{\EBC@Impl{#1}{#2}{\EBC@Line}}%
+% expense optional (not added to total)
+\newcommand{\EBCo}[2]{\EBC@Impl{#1}{#2}{\EBC@LineOption}}%
+%
+\newcommand{\EBC@Impl}[3]{% Yields state 5: Expenses in BaseCurrency
 	%
 	% #1 Contents und Datum
 	% #2 Amount in BaseCurrency
+	% #3 \EBC@Line implementation
 	%
 	\ifcase\Flag % 0: Invoice not started yet
 		%
@@ -491,26 +549,26 @@
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	\or	% 2: Start project, print title
 		%
-		\Expense@Title%
-		\Expense@BaseCurrency{#1}{#2}%
+		\Expense@BaseCurrency@Title%
+		#3{#1}{#2}%
 		%
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	\or	% 3: Print remuneration item
 		%
 		\ST@Fee%
-		\Expense@Title%
-		\Expense@BaseCurrency{#1}{#2}%
+		\Expense@BaseCurrency@Title%
+		#3{#1}{#2}%
 		%
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	\or	% 4: Print subtotal remuneration
 		%
-		\Expense@Title%
-		\Expense@BaseCurrency{#1}{#2}%
+		%\Expense@BaseCurrency@Title%
+		#3{#1}{#2}%
 		%
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	\or	% 5: Expense item
 		%
-		\Expense@BaseCurrency{#1}{#2}%
+		#3{#1}{#2}%
 		%
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	\or	% 6: Print subtotal expenses
@@ -609,20 +667,20 @@
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	\or	% 2: Start project, print title
 		%
-		\Expense@Title%
+		\Expense@ForeignCurrency@Title%
 		\Expense@ForeignCurrency{#1}{#2}{#3}{#4}{#5}%
 		%
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	\or	% 3: Print remuneration item
 		%
 		\ST@Fee%
-		\Expense@Title%
+		\Expense@ForeignCurrency@Title%
 		\Expense@ForeignCurrency{#1}{#2}{#3}{#4}{#5}%
 		%
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	\or	% 4: Print subtotal remuneration
 		%
-		\Expense@Title%
+		\Expense@ForeignCurrency@Title%
 		\Expense@ForeignCurrency{#1}{#2}{#3}{#4}{#5}%
 		%
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -833,7 +891,12 @@
 	\gdef\Interest@Contents{#1}%
 	\FPeval\r{#3 * #2/100}%
 	\global\edef\Interest@rate{\r}%
-}
+}%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\Subtitle}[1]{%
+	% Inserts a subtitle verbatim
+	\multicolumn{5}{@{}l}{\rule{0pt}{3ex}\textbf{#1}}\\%
+}%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newcommand{\Total@Reset}{%
 	\setcounter{Fee}{0}%
@@ -843,6 +906,7 @@
 }%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newcommand{\ST@Reset}{%
+	\setcounter{ST}{0}%
 	\setcounter{ST@Fee}{0}%
 	\setcounter{ST@VAT}{0}%
 	\setcounter{ST@Expenses}{0}%
@@ -852,8 +916,15 @@
 \newcommand{\Print@Value}[1]{%
 	\FPmul\r#1{0.01}%% <- Reduce to BaseCurrency
 	\FPtrunc\r\r{2}%% <- Truncate to two digits
-%	 \num{\r}%		% <- Output data!
-	\r%		% <- Output data!
+	%\num{\r}%		% <- Output data!
+	\tablenum[mode=text,table-format=6.2]{\r}%		% <- Output data!
+}%
+\newcommand{\Print@Money}[2]{%
+	%
+	% #1 Amount
+	% #2 Currency
+	%
+	#2\quad\hfill\Print@Value{#1}%
 }%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newcommand{\Message@Value}[1]{%
@@ -867,86 +938,145 @@
 	%
 	\gdef\Flag{2}%
 	\gdef\Project{#1}%
-	\ST@Reset\addtocounter{Project}{1}%
+	\ST@Reset%
+	\addtocounter{Project}{1}%
 	\ifnum\theProject>1 \\\\\else\\\fi%
-	\multicolumn{6}{c}{\textbf{\large#1}}\\%
+	\multicolumn{5}{@{}c}{\textbf{\large #1}}\\%
 }%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newcommand{\Fee@Title}{%
-	\\
-	\Date&\noindent\Activity&&\UnitRate&\Count&\Amount\ (\BC)\\
+	\\%
+	\noindent\textbf{\Activity}&&\UnitRate&\Count&\Amount\\%
 	\hline%
 }%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\newcommand{\Fee@Line}[4][]{%
+\newcommand{\invoice@ifempty}[1]{\def\x{#1}\ifx\x\empty}%
+%
+\newcommand{\Fee@Line}[3]{%
 	%
-	% #1 Date
-	% #2 Contents
-	% #3 Charged Fee per Unit
-	% #4 Count
+	% #1 Contents
+	% #2 Charged Fee per Unit
+	% #3 Count
 	%
 	% Internal command, called by \Fee.
 	%
 	\gdef\Flag{3}%
 	%
-	#1	&#2			&	&#3	&#4 &
+	#1			&	&\invoice@ifempty{#2}\else\tablenum[mode=text,table-format=4.2]{#2}\fi	&\invoice@ifempty{#3}\else\tablenum[mode=text,table-format=3.2]{#3}\fi &%
 %
 %   next is reversed to allow real arithmetic.
 %   intermediate results are stored in integer format,
 %   so calculations are incorrect in case #2 is a real.
 %   fixed by exchanging the 1 and the 100
 %
-		\FPmul\r{100}{#3}% added 2006-01-04
-		\setcounter{One@Fee}{1 *\real{\r} * \real{#4} }%
+		\FPmul\r{100}{#2}% added 2006-01-04
+		\setcounter{One@Fee}{1 * \real{\r} * \real{#3} }%
 %
 		\addtocounter{ST@Fee}{\theOne@Fee}%
 		\addtocounter{Fee}{\theOne@Fee}%
 		\addtocounter{Fee@ctr}{1}%	    increase counter with 1
-		\Print@Value{\theOne@Fee}\\%
+		\Print@Money{\theOne@Fee}{\BC}\\%
+}%
+\newcommand{\Fee@LineStar}[3]{%
+	%
+	% #1 Contents
+	% #2 Charged Fee per Unit
+	% #3 Count
+	%
+	% Internal command, called by \Fee*.
+	%
+	\gdef\Flag{3}%
+	%
+	#1			&	&\invoice@ifempty{#2}\else\tablenum[mode=text,table-format=4.2]{#2}\fi	&\invoice@ifempty{#3}\else\tablenum[mode=text,table-format=3.2]{#3}\fi &%
+%   next is reversed to allow real arithmetic.
+%   intermediate results are stored in integer format,
+%   so calculations are incorrect in case #2 is a real.
+%   fixed by exchanging the 1 and the 100
+%
+		\FPmul\r{100}{#2}% added 2006-01-04
+		\setcounter{One@Fee}{1 *\real{\r} * \real{#3} }%
+%
+		\addtocounter{Fee@ctr}{1}%	    increase counter with 1
+		(\Print@Money{\theOne@Fee}{\BC})\\%
+		%(\BC\quad\hfill\Print@Value{\theOne@Fee})\\%
 }%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newcommand{\ST@Fee}{%
 	% \gdef\Flag{4}%
 	\ifnum\theST@Fee>0%
-	    \ifthenelse{\theFee@ctr>1} %	    % if more than 1 \Fee line
-		{\Print@ST@Fees%					% print it, else
-		}%
-	    {}%									% do nothing
-		\ifVATnonzero\ST@VAT@Printout\fi%
+		\ifcase\invoice@subtotalmode % 0: never
+			%
+			%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+			\or	% 1: always
+			%
+			\Print@ST@Fees%
+			%
+			%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+			\or	% 2: ifmultiple
+			%
+			\ifnum\theFee@ctr>1%
+				\Print@ST@Fees%
+			\fi%
+			%
+			%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+			\or	% 3: projectonly
+			%
+		\fi%
+		\ifnum\invoice@vatmode>1%
+			\ifVATnonzero\ST@VAT@Printout\fi%
+		\fi%
 	\fi%
 }%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newcommand{\Print@ST@Fees}{%
 	\gdef\Flag{4}%
-	\\\multicolumn{5}{l}{\SubtotalFee} &%	print the subtotal of fees
-		\Print@Value{\theST@Fee}\\%
+	\addtocounter{ST}{1}%
+	\\%
+	\multicolumn{4}{@{}l}{\SubtotalFee} &%	print the subtotal of fees
+	\Print@Money{\theST@Fee}{\BC}\\%
 }%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newcommand{\ST@VAT@Printout}{%
-		\multicolumn{5}{l}{\VAT\ (\VAT@rate\%)} &%
+		\multicolumn{4}{l}{\VAT\ (\VAT@rate\%)} &%
 			\setcounter{ST@VAT}{\theST@Fee * \real{\VAT@rate} / 100}%
-				\Print@Value{\theST@VAT}\\%
+				\Print@Money{\theST@VAT}{\BC}\\%
 }%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\newcommand{\Expense@BaseCurrency}[2]{%
-	& #1			& \BC		&	&	&%
+\newcommand{\EBC@Line}[2]{%
+	% internal command, called by \EBC.
+	%
+	%#1			&	&	&	&%
+	\multicolumn{4}{@{}b{140mm}}{#1} &% TODO: dynamic width??
 	\gdef\Flag{5}%
 	\FPmul\r{100}{#2}%
 	\setcounter{One@Expense}{1*\real{\r}}%
 	\addtocounter{ST@Expenses}{\theOne@Expense}%
 	\addtocounter{Expenses}{\theOne@Expense}%
 	\addtocounter{Expense@ctr}{1}%advance counter
-				\Print@Value{\theOne@Expense}\\%
+	\Print@Money{\theOne@Expense}{\BC}%
+	\\%
+}%
+\newcommand{\EBC@LineOption}[2]{%
+	% internal command, called by \EBCo.
+	%#1			&	&	&	&%
+	\multicolumn{4}{@{}b{140mm}}{#1} &% TODO: dynamic width??
+	\gdef\Flag{5}%
+	\FPmul\r{100}{#2}%
+	\setcounter{One@Expense}{1*\real{\r}}%
+	\addtocounter{Expense@ctr}{1}%advance counter
+	%(\BC\quad\hfill\Print@Value{\theOne@Expense})\\%
+	(\Print@Money{\theOne@Expense}{\BC})\\%
 }%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newcommand{\Expense@Base@Currency}[2]{%
+	% should not set flag 5 because other \EBC could follow which then don't have a header...
 	\gdef\Flag{5}%
 	\FPmul\r{100}{#2}%
 	\setcounter{One@Expense}{1*\real{\r}}%
 	\addtocounter{ST@Expenses}{\theOne@Expense}%
 	\addtocounter{Expenses}{\theOne@Expense}%
 	\addtocounter{Expense@ctr}{1}%advance counter
-		&	&	&	&	&	\\[-1.2em]% This is an ugly kludge:
+		&	&	&	&	\\[-1.2em]% This is an ugly kludge:
 								  %	Inserting an empty line
 								  % which rolls backwards
 								  % makes disappear the spurious
@@ -962,7 +1092,10 @@
 	% 2. {Contents}{Currency}{Amount}{          }{BaseCurrency}
 	% 3. {Contents}{Currency}{Amount}{Umrechnung}{BaseCurrency}
 	%
-	#1	 & #2	& #3	& #4&%
+	#1	 &	&%
+	\FPmul\r{100}{#3}%
+	\Print@Money{\r}{#2} &%
+	\texttimes~\num{#4} &%
 	\ifthenelse{\equal{#5}{}}% Target in BaseCurrency or not?
 		{% Target not in BaseCurrency
 			\FPmul\r{100}{#3}%
@@ -975,8 +1108,7 @@
 	\addtocounter{ST@Expenses}{\theOne@Expense}%
 	\addtocounter{Expenses}{\theOne@Expense}%
 	\addtocounter{Expense@ctr}{1}%advance counter
-	\Print@Value{\theOne@Expense}%
-\\%
+	\Print@Money{\theOne@Expense}{\BC}\\%
 }%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newcommand{\Expense@Foreign@Currency}[5]{%
@@ -1002,90 +1134,139 @@
 		&	&	&	&	\\[-1.2em]% ugly kludge as above
 }%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\newcommand{\Expense@Title}{%
+\newcommand{\Expense@BaseCurrency@Title}{%
 	\\%
-	\Date&\textbf{\Expense}&\Currency&\Amount&\Factor &\BC\\%
+	\noindent\textbf{\Expense}&&&&\Amount\\%
+	\hline%
+}%
+\newcommand{\Expense@ForeignCurrency@Title}{%
+	\\%
+	\noindent\textbf{\Expense}&&\Value &\Factor &\Amount\\%
 	\hline%
 }%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newcommand{\ST@Expenses}{%
 	% \gdef\Flag{6}%
 	\ifnum\theST@Expenses>0%
-	    \ifthenelse{\theExpense@ctr>1}%	    % if more than 1 Expense line
-		{\Print@ST@Expenses}%				% print it, else
-		{}%									% do nothing
+		\ifcase\invoice@subtotalmode % 0: never
+			%
+			%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+			\or	% 1: always
+			%
+			\Print@ST@Expenses%
+			%
+			%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+			\or	% 2: ifmultiple
+			%
+			\ifnum\theExpense@ctr>1\Print@ST@Expenses\fi%
+			%
+			%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+			\or	% 3: projectonly
+			%
+		\fi%
 	\fi%
 }%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newcommand{\Print@ST@Expenses}{%
 	\gdef\Flag{6}%
-		&	&	&	&	&	\\[-1.2em]% ugly kludge as above
-	\multicolumn{5}{l}{\SubtotalExpenses} &%	print the subtotal of expenses
-		\Print@Value{\theST@Expenses}\\%
+	\addtocounter{ST}{1}%
+		&	&	&	&	\\[-1.2em]% ugly kludge as above
+	\multicolumn{4}{@{}l}{\SubtotalExpenses} &%	print the subtotal of expenses
+		\Print@Money{\theST@Expenses}{\BC}\\%
 }%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newcommand{\ST@Project}{%
 	\gdef\Flag{7}%
-	\\
-	%\multicolumn{4}{l}{\SubtotalProject}%
-	%\let\Project\NewProject%
-	%&
-	\multicolumn{5}{l}{\SubtotalProject} &
+	\\%
+	\ifcase\invoice@subtotalmode % 0: never
+		%
+		%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+		\or	% 1: always
+		%
+		\Print@ST@Project%
+		%
+		%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+		\or	% 2: ifmultiple
+		%
+		\ifnum\theST>1\Print@ST@Project\fi%
+		%
+		%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+		\or	% 3: projectonly
+		%
+		\ifnum\theProject>1\Print@ST@Project\fi%
+		%
+	\fi%
+}%
+\newcommand{\Print@ST@Project}{%
+	%\ifnum\theST@Project>0%
+	\hline%
+	\multicolumn{4}{@{}l}{\SubtotalProject} &%
 			\addtocounter{ST@Project}{\theST@Fee}%
 			\addtocounter{ST@Project}{\theST@VAT}%
 			\addtocounter{ST@Project}{\theST@Expenses}%
-			\Print@Value{\theST@Project}\\
-}
+	\Print@Money{\theST@Project}{\BC}\\%
+	%\fi
+}%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\Total@VAT@Printout}{%
+	\setcounter{VAT}{\theFee*\real{\VAT@rate}/100}%
+	\multicolumn{4}{@{}l}{\SumVAT}	&\Print@Money{\theVAT}{\BC}\\%
+}%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newcommand{\Tot@l}{%
-	% Calculate VAT and interest and sum it all up
-	\message{^^J\Currency: \BC}%
-	\message{^^J\VAT: \VAT@rate}%
-	\addtocounter{Total}{\theFee}%
-	\message{^^J\SumFees: }\Message@Value{\theFee}%
-
-	\setcounter{VAT}{\theFee*\real{\VAT@rate}/100}%
-
-	\addtocounter{Total}{\theVAT}%
-	\message{^^J\SumVAT: }\Message@Value{\theVAT}%
-	\addtocounter{Total}{\theExpenses}%
-	\message{^^J\SumExpenses: }\Message@Value{\theExpenses}%
-	\ifnum\theDiscount<0 %
-	\addtocounter{Total}{\theDiscount}%
-	\message{^^J\Discount@Contents: }\Message@Value{\theDiscount}%
-	\fi %
-	\ifx\Interest@rate\undefined\else
-	\setcounter{Interest}{\theTotal*\real{\Interest@rate}}%
-
-	\addtocounter{Total}{\theInterest}%
-	\message{^^JInterest: }\Message@Value{\theInterest}%
+	% calculate interest
+	\ifx\Interest@rate\undefined%
+		\setcounter{Interest}{0}%
+	\else%
+		\setcounter{Interest}{\theTotal * \real{\Interest@rate}}%
 	\fi%
-
-	\\\hline
-	\ifnum\theFee>0 \multicolumn{5}{l}{\SumFees} &%
-				\Print@Value{\theFee}\\
-		\ifVATnonzero%
-			\multicolumn{5}{l}{\SumVAT}	&\Print@Value{\theVAT}\\%
+	%
+	\\
+	\ifnum\invoice@totalmode=2%
+		\hline
+		\ifnum\theFee>0 \multicolumn{4}{@{}l}{\SumFees} &%
+					\Print@Money{\theFee}{\BC}\\
+			\ifVATnonzero%
+				\Total@VAT@Printout%
+			\fi%
+		\fi%
+		\ifnum\theExpenses>0 \multicolumn{4}{@{}l}{\SumExpenses} &%
+					\Print@Money{\theExpenses}{\BC}\\
+		\fi%
+		\ifnum\theDiscount<0 \multicolumn{4}{@{}l}{\Discount@Contents} &%
+					\Print@Money{\theDiscount}{\BC}\\
+		\fi%
+		\ifnum\theInterest>0 \multicolumn{4}{@{}l}{\Interest@Contents} &%
+					\Print@Money{\theInterest}{\BC}\\
 		\fi%
 	\fi%
-	\ifnum\theExpenses>0 \multicolumn{5}{l}{\SumExpenses} &%
-				\Print@Value{\theExpenses}\\
+	\ifnum\invoice@totalmode>0%
+		\hline%
+		\multicolumn{4}{@{}l}{\Total} &%
+			\message{^^J\Currency: \BC}%
+			\message{^^J\VAT: \VAT@rate}%
+			\addtocounter{Total}{\theFee}%
+			\message{^^J\SumFees: }\Message@Value{\theFee}%
+			\addtocounter{Total}{\theVAT}%
+			\message{^^J\SumVAT: }\Message@Value{\theVAT}%
+			\addtocounter{Total}{\theExpenses}%
+			\message{^^J\SumExpenses: }\Message@Value{\theExpenses}%
+			\ifnum\theDiscount<0%
+				\addtocounter{Total}{\theDiscount}%
+				\message{^^J\Discount@Contents: }\Message@Value{\theDiscount}%
+			\fi%
+			\ifnum\theInterest>0%
+				\addtocounter{Total}{\theInterest}%
+				\message{^^JInterest: }\Message@Value{\theInterest}%
+			\fi%
+			\message{^^J\Total: }%
+				\Message@Value{\theTotal}\message{^^J^^J}%
+		\Print@Money{\theTotal}{\BC}\\%
+		\hline\hline%
 	\fi%
-	\ifnum\theDiscount<0 \multicolumn{5}{l}{\Discount@Contents} &%
-				\Print@Value{\theDiscount}\\
-	\fi%
-	\ifnum\theInterest>0 \multicolumn{5}{l}{\Interest@Contents} &%
-				\Print@Value{\theInterest}\\
-	\fi%
-	\hline\hline
-	\multicolumn{5}{l}{\textbf{\Total}} &%
-		\textbf{\Print@Value{\theTotal}}% 		FIXME: Not bold
-		\message{^^J\Total: }%
-			\Message@Value{\theTotal}\message{^^J^^J}\\%
 	\end{longtable}
 	%\end{center}% Removed 20050621 by suggestion from ...
 	\gdef\Flag{8}%
-}
+}%
 \endinput
 % vim:ts=4:sw=4
