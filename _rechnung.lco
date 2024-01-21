@@ -65,13 +65,22 @@
                     \usekomavar{fromaddress}
                   }~                        \\
                                             \\
+      \Ifkomavarempty{fromemail}{}{%
       \usekomavar*{emailseparator}\usekomavar{emailseparator}%
                 & \usekomavar{fromemail}    \\
+      }
+      \Ifkomavarempty{fromphone}{}{%
+      \usekomavar*{phoneseparator}\usekomavar{phoneseparator}%
+                & \usekomavar{fromphone}    \\
+      }
+      \Ifkomavarempty{fromurl}{}{%
       \usekomavar*{urlseparator}\usekomavar{urlseparator}%
                 & \usekomavar{fromurl}      \\
+      }
                                             \\
       \Ifkomavarempty{vatid}{}{%
-      MWST-Nr.  & \usekomavar{vatid}        \\
+      \usekomavar*{vatid}%
+                & \usekomavar{vatid}        \\
                                             \\
       }
       % Bank      & \usekomavar{frombankname} \\
@@ -87,7 +96,7 @@
   \parbox[b]{\linewidth}{\footnotesize%
     \rule[3pt]{\textwidth}{.4pt} \\
     \begin{tabular}[t]{l@{}}%
-      \textbf{Adresse:} \smallskip \\
+      \textbf{Adresse} \smallskip \\
       \usekomavar{fromname} \\
       \usekomavar{fromaddress}
     \end{tabular}%
@@ -99,7 +108,7 @@
     % \end{tabular}%
     \qquad\qquad
     \begin{tabular}[t]{@{}l l@{\extracolsep{20pt}}  l@{\extracolsep{5pt}} l@{}}
-      \multicolumn{4}{@{}l@{}}{\textbf{Bankverbindung:}} \smallskip \\
+      \multicolumn{4}{@{}l@{}}{\textbf{Bankverbindung}} \smallskip \\
       % \multicolumn{1}{@{}l@{}}{\textbf{\usekomavar*{frombank}:}} \smallskip \\
       % \usekomavar{frombank}
       Bank & \usekomavar{frombankname} & SWIFT/BIC & \usekomavar{frombankbic}  \\
@@ -115,7 +124,8 @@
 % ################## Variablen ##################
 
 \newkomavar{paydate}
-\newkomavar[MWSt-Nummer]{vatid}
+
+\newkomavar[MWST-Nummer:]{vatid}
 
 \newkomavar[Bank-Clearing Nummer]{frombankbcno}
 \newkomavar[Name der Bank]{frombankname}
@@ -129,7 +139,8 @@
 
 \newcommand{\payperiod}{30}
 \setkomavar{date}{\restoredate{invoicedate}\printfdate{normal}}
-\setkomavar{invoice}{\restoredate{invoicedate}\printfdate{invoiceno}-1}
+\def\@invoiceno{\restoredate{invoicedate}\printfdate{invoiceno}-1}
+\setkomavar{invoice}{\@invoiceno}
 \setkomavar{paydate}{\restoredate{invoicedate}\advancebydays{\payperiod}\printfdate{normal}}
 
 

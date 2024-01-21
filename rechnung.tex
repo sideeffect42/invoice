@@ -1,8 +1,8 @@
-\documentclass[DIN,SN,10pt,DIV=18,_rechnung]{scrlttr2}
+\documentclass[DIN,SN,10pt,DIV=16,_rechnung]{scrlttr2}
 \usepackage{scrlayer-scrpage}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage[ngerman]{babel}
+\usepackage[nswissgerman]{babel}
 \usepackage{bera}
 
 \usepackage{microtype}
@@ -15,12 +15,22 @@
 \def\SumFees{Zwischensumme}
 \def\SumExpenses{\Expenses}
 
+\sisetup{
+  mode=text,
+  group-digits=integer,
+  group-separator=\,,
+  group-minimum-digits=4
+}
+
 \usepackage{texdate}
 
 \renewcommand{\familydefault}{\sfdefault}
+\addtokomafont{title}{\raggedright}
+\renewcommand*{\raggedsignature}{\raggedright}
+\setplength{sigbeforevskip}{.5\baselineskip}
 
 \setkomavar{fromlogo}{\includegraphics[width=8cm,height=2cm,keepaspectratio]{logo}}
-\setkomavar{fromname}{\LaTeX\ User}
+\setkomavar{fromname}{LaTeX User}
 \setkomavar{fromaddress}{Bahnhofstrasse 1\\1234 Musterhausen}
 \setkomavar{place}{Musterhausen}
 \setkomavar{fromphone}{+41\,(0)\,32\,123\,45\,47}
@@ -32,6 +42,7 @@
 \setkomavar{fromurl}{\href{http://www.example.com}{www.example.com}}
 
 \setkomavar{vatid}{123/456/78901}
+
 \setkomavar{frombankbcno}{30060088}
 \setkomavar{frombankname}{DAB-Bank, 0000 Foohausen}
 \setkomavar{frombankiban}{DE00 3006 0088 1234 5678 90}
@@ -44,17 +55,29 @@
 
 % Set pay periods and title
 \ifnum\thereminder=0
-\setkomavar{title}{\raggedright Rechnung}
+\setkomavar{title}{Rechnung}
 \renewcommand{\payperiod}{30}
 \else
 \ifnum\thereminder=1
-\setkomavar{title}{\raggedright Zahlungserinnerung}
+\setkomavar{title}{Zahlungserinnerung}
 \renewcommand{\payperiod}{14}
 \else
-\setkomavar{title}{\raggedright Letzte Mahnung}
+\setkomavar{title}{Letzte Mahnung}
 \renewcommand{\payperiod}{10}
 \fi
 \fi
+
+\usepackage{hyperref}
+
+\hypersetup{
+  pdffitwindow=true,
+  pdfstartview={FitW},
+  pdfnewwindow=true
+}
+
+\newcommand\hyperset[2]{\hypersetup{#1=#2}}
+\usekomavar[\hyperset{pdftitle}]{title}
+\usekomavar[\hyperset{pdfauthor}]{fromname}
 
 \begin{document}
   \begin{letter}{
@@ -83,6 +106,8 @@
       \fi
     \fi
 
+    \renewcommand{\arraystretch}{1.2}
+
     \begin{invoice}{CHF}{0}
       \ProjectTitle{Projekttitel} %
       \Fee{Musterdienstleistung 1}{30.00}{4}
@@ -108,8 +133,7 @@
         % Invoice
         Bitte zahlen Sie den oben aufgeführten {\Total} unter Angabe der
         Rechnungsnummer (\usekomavar{invoice}) bis zum \usekomavar{paydate} auf
-        das in der Fusszeile angegebene Konto ein.\\
-        Besten Dank dafür.
+        das in der Fusszeile angegebene Konto ein.
       \else
         % Reminder
         Ich bitte Sie deswegen freundlichst, die Bezahlung des oben aufgeführten
@@ -120,7 +144,7 @@
         kontaktieren, damit wir eine Lösung finden können.
       \fi
 
-      \closing{Mit freundlichen Grüssen}
+      \closing{Besten Dank für Ihr Vertrauen.}
 
       % \encl{}
     \end{samepage}
