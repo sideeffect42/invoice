@@ -1,4 +1,5 @@
 PDFLATEX ?= pdflatex
+XELATEX ?= xelatex
 
 TEXINPUTS = './:./packages//:'
 
@@ -21,7 +22,7 @@ clean:
 %.pdf: _%.lco
 
 %.pdf: %.tex
-	TEXINPUTS=$(TEXINPUTS) $(PDFLATEX) $<
+	TEXINPUTS=$(TEXINPUTS) $(XELATEX) $<
 
 %.signed.pdf: %.pdf
 ifeq (,$(GPG))
