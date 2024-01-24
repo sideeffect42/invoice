@@ -80,7 +80,30 @@
 \usekomavar[\hyperset{pdfauthor}]{fromname}
 
 \qrbillsetdata*{
+  % TODO: sync with frombankiban
   Account={CH1280808005649899718},
+  % TODO: sync with from koma vars
+  creditor*={
+    LaTeX User\\
+    Bahnhofstrasse\\
+    23\\
+    1337\\
+    Vallorbe\\
+    CH%
+  },
+  % TODO: sync with letter environment
+  debtor={
+    Some Corp\\
+    Bahnhofstrasse 42\\
+    9400 Rorschach\\
+    CH%
+  },
+  % Message={Rechnung \usekomavar{invoice}}
+  % Amount={\FPmul\r{\theTotal}{0.01}\FPtrunc\r\r{2}\r},
+  Amount=42.50,
+  % invoicedate={\restoredate{invoicedate}\printfdate{invoiceno}},
+  % invoicenum=\usekomavar{invoice},
+  % vat=(~UID),
 }
 
 \begin{document}

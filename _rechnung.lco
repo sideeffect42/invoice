@@ -150,7 +150,9 @@
 
 \RequirePackage[
   frame=top,
-  icon=swiss-cross
+  icon=swiss-cross,
+  sep-iban=4,
+  sep-reference=-5,
 ]{qrbill}
 \DeclareNewLayer[
   align=bl,
