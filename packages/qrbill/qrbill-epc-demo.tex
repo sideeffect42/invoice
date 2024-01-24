@@ -1,0 +1,54 @@
+%%
+%% This is file `qrbill-epc-demo.tex',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% qrbill.dtx  (with options: `qrbill-epc-demo.tex')
+%% 
+%% Copyright (C) 2020–2023 by Marei Peischl (peiTeX) <marei@peitex.de>
+%% 
+%% This work is a collaboration of
+%%   Marei Peischl (peiTeX) and Alex Antener (foobar LLC).
+%% 
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3c
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in
+%%    http://www.latex-project.org/lppl.txt
+%% and version 1.3c or later is part of all distributions of LaTeX
+%% version 2005/12/01 or later.
+%% 
+%% This work has the LPPL maintenance status `maintained'.
+%% 
+%% The Current Maintainer of this work is
+%%   Marei Peischl <qrbill@peitex.de>.
+%% 
+%% This work consists of the files
+%% qrbill.dtx and qrbill.ins, qrbill-vocab.csv
+%% and the derived files
+%% qrbill.sty, swiss.qrbill-cfg.tex, epc.qrbill-cfg.tex,
+%% qrbill-letter-demo.tex, qrbill-standalone-demo.tex,
+%% and qrbill-epc-demo.tex.
+%% 
+%% The development repository can be found at
+%% https://github.com/peitex/qrbill
+%% Please use the issue tracker for feedback!
+%% 
+\documentclass{article}
+\usepackage[qrscheme=epc]{qrbill}
+
+\begin{document}
+
+\QRbill*[
+ BIC=BYLADEM1GLS,
+ Account=DE68430609671013251700,
+ Name=peiTeX,
+ Amount=EUR1 .42,
+ Message={Invoice 2022:1337, customer 1337}
+]
+
+\end{document}
+\endinput
+%%
+%% End of file `qrbill-epc-demo.tex'.

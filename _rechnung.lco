@@ -1,5 +1,5 @@
 % -*- mode: latex -*-
-\ProvidesFile{_rechnung.lco}[2018-11-20 Rechnung]
+\ProvidesFile{_rechnung.lco}[2023-01-24 QR-Rechnung]
 
 \@ifclassloaded{scrlttr2}{}{%
   \GenericWarning{%
@@ -95,26 +95,6 @@
   \centering\color[gray]{.3}%
   \parbox[b]{\linewidth}{\footnotesize%
     \rule[3pt]{\textwidth}{.4pt} \\
-    \begin{tabular}[t]{l@{}}%
-      \textbf{Adresse} \smallskip \\
-      \usekomavar{fromname} \\
-      \usekomavar{fromaddress}
-    \end{tabular}%
-    % \qquad\qquad
-    % \begin{tabular}[t]{r@{\extracolsep{2pt}} l@{}}%
-    %   \multicolumn{2}{@{}l@{}}{\textbf{Kontakt:}} \smallskip \\
-    %   \usekomavar*{emailseparator}\usekomavar{emailseparator} & \usekomavar{fromemail} \\
-    %   \usekomavar*{urlseparator}\usekomavar{urlseparator} & \usekomavar{fromurl} \\
-    % \end{tabular}%
-    \qquad\qquad
-    \begin{tabular}[t]{@{}l l@{\extracolsep{20pt}}  l@{\extracolsep{5pt}} l@{}}
-      \multicolumn{4}{@{}l@{}}{\textbf{Bankverbindung}} \smallskip \\
-      % \multicolumn{1}{@{}l@{}}{\textbf{\usekomavar*{frombank}:}} \smallskip \\
-      % \usekomavar{frombank}
-      Bank & \usekomavar{frombankname} & SWIFT/BIC & \usekomavar{frombankbic}  \\
-      IBAN & \usekomavar{frombankiban} & BC-Nr.    & \usekomavar{frombankbcno}
-    \end{tabular}%
-    \hfill
     \pagemark
   }
 }
@@ -147,20 +127,46 @@
 % ################## scrlayers ##################
 
 \RequirePackage{scrlayer-scrpage}
-\ForEachLayerOfPageStyle*{plain.scrheadings}{%
-  \Ifstrstart{#1}{plain.scrheadings.foot}{%
-    \ModifyLayer[
-      addvoffset=-5mm
-    ]{#1}
-  }{}
-}
-\ModifyLayer[ % shift the footsepline up
-  addvoffset=-1ex
-]{plain.scrheadings.foot.above.line}
+% \ForEachLayerOfPageStyle*{plain.scrheadings}{%
+%   \Ifstrstart{#1}{plain.scrheadings.foot}{%
+%     \ModifyLayer[
+%       addvoffset=-5mm
+%     ]{#1}
+%   }{}
+% }
+% \ModifyLayer[ % shift the footsepline up
+%   addvoffset=-1ex
+% ]{plain.scrheadings.foot.above.line}
 
 \clearpairofpagestyles
-\cfoot*{\usekomavar{firstfoot}}
+%\cfoot*{\usekomavar{firstfoot}}
 
-\pagestyle{plain}
+%\pagestyle{plain}
 % make sure to add this after \opening:
 % \thispagestyle{plain}
+
+
+% ################# QR Rechnung #################
+
+\RequirePackage[
+  frame=top,
+  icon=swiss-cross
+]{qrbill}
+\DeclareNewLayer[
+  align=bl,
+  voffset=\paperheight,
+  hoffset=0pt,
+  contents={\QRbill},
+  width=\paperwidth,
+  height=105mm
+]{qrbill}
+
+\AtEndLetter{
+  \ifdim\pagetotal>170mm
+    \pagebreak~
+  \fi
+
+  % FIXME: empty??
+  \thispagestyle{empty}
+  \AddLayersToPageStyle{empty}{qrbill}
+}
