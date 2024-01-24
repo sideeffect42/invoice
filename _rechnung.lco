@@ -156,9 +156,16 @@
   align=bl,
   voffset=\paperheight,
   hoffset=0pt,
-  contents={\QRbill},
+  contents={
+    \footnotesize
+    \begin{center}
+      \textbf{Zahlbar bis \usekomavar{paydate}.}
+      Bitte verwenden Sie zur Zahlung nur diesen Einzahlungsschein.
+      \\[2\baselineskip]
+    \end{center}
+    \QRbill},
   width=\paperwidth,
-  height=105mm
+  height=120mm  %105mm
 ]{qrbill}
 
 \AtEndLetter{
